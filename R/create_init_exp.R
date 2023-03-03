@@ -15,18 +15,85 @@
 #' @return SummarizedExperiment with provided data
 #' @export
 #'
+#' @import SummarizedExperiment
+#' @import S4Vectors
+#'
 #' @examples
-#' x <- matrix(rep(1,4),nrow = 2, ncol = 2)
-#' rownames(x) <- c("featA", "featB")
-#' colnames(x) <- c("Sample1", "Sample2")
-#' y <- data.frame(cell_type = c("A","A"),
-#' donor_id = c("Sample1", "Sample2"),
-#' cell_counts = c(30,30))
-#' se <- create_init_exp(x, y)
+#' inputs_dir <- base::system.file("data", package = "MOFAcellulaR")
+#' load(file.path(inputs_dir, "testpbcounts.rda"))
+#' load(file.path(inputs_dir, "testcoldata.rda"))
+#' pb_obj <- create_init_exp(counts = testpbcounts,  coldata = testcoldata)
 create_init_exp <- function(counts, coldata) {
 
   pb_dat <- SummarizedExperiment::SummarizedExperiment(assays = list("counts" = counts),
                                                        colData = S4Vectors::DataFrame(coldata))
 
   return(pb_dat)
+}
+
+#' Create MOFA-ready dataframe
+#'
+#' @description
+#' Creates from a list of SummarizedExperiments a multi-view representation for MOFA
+#'
+#' @details
+#'
+#' This function is the last data preparation step for a multicellular factor analysis.
+#' It collects a collection of cell-type-specific SummarizedExperiments into a
+#' single data frame ready to be used in MOFA. Features are modified
+#' so as to reflect their cell type of origin.
+#'
+#' @param pb_dat_list List of SummarizedExperiment generated from `MOFAcellulaR::filt_profiles()`
+#'
+#' @return Data frame in a multiview representation
+#' @export
+#'
+#' @import SummarizedExperiment
+#' @import S4Vectors
+#' @import purrr
+#' @import scran
+#' @import tidyr
+#' @import tibble
+#' @import dplyr
+#'
+#' @examples
+#' inputs_dir <- base::system.file("data", package = "MOFAcellulaR")
+#' load(file.path(inputs_dir, "testpbcounts.rda"))
+#' load(file.path(inputs_dir, "testcoldata.rda"))
+#' pb_obj <- create_init_exp(counts = testpbcounts,  coldata = testcoldata)
+#'
+#' ct_list <- filt_profiles(pb_dat = pb_obj,
+#'                          cts = c("Fib","CM"),
+#'                          ncells = 5,
+#'                          counts_col = "cell_counts",
+#'                          ct_col = "cell_type")
+#'
+#' ct_list <- filt_gex_byexpr(pb_dat_list = ct_list,
+#'                            min.count = 5,
+#'                            min.prop = 0.25)
+#'
+#' ct_list <- tmm_trns(pb_dat_list = ct_list,
+#'                     scale_factor = 1000000)
+#'
+#' multiview_dat <- pb_dat2MOFA(pb_dat_list = ct_list)
+pb_dat2MOFA <- function(pb_dat_list) {
+
+  pb_red <- purrr::map(pb_dat_list, function(x) {
+
+    dat <- SummarizedExperiment::assay(x, "logcounts")
+
+    colnames(dat) <- SummarizedExperiment::colData(x)[,"donor_id"]
+
+    dat %>%
+      base::as.data.frame() %>%
+      tibble::rownames_to_column("feature") %>%
+      tidyr::pivot_longer(-feature, names_to = "sample", values_to = "value")
+
+  }) %>%
+    tibble::enframe(name = "view") %>%
+    tidyr::unnest() %>%
+    dplyr::mutate(feature = paste0(view, "_", feature))
+
+  return(pb_red)
+
 }
