@@ -26,7 +26,7 @@ allows the user to provide the features to be used in each cell type. If prior g
 where this information is missing, highly variable genes will be calculated
 }
 \examples{
-inputs_dir <- base::system.file("data", package = "MOFAcellulaR")
+inputs_dir <- base::system.file("extdata", package = "MOFAcellulaR")
 load(file.path(inputs_dir, "testpbcounts.rda"))
 load(file.path(inputs_dir, "testcoldata.rda"))
 

@@ -37,7 +37,7 @@ select only the cell-types provided by the user and filter the profiles
 with less cells as the ones specified.
 }
 \examples{
-inputs_dir <- base::system.file("data", package = "MOFAcellulaR")
+inputs_dir <- base::system.file("extdata", package = "MOFAcellulaR")
 load(file.path(inputs_dir, "testpbcounts.rda"))
 load(file.path(inputs_dir, "testcoldata.rda"))
 

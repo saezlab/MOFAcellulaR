@@ -25,7 +25,7 @@ by expression of cell type marker genes in cell types which shouldn't express th
 Marker genes will be only kept in the matrix if they are expressed in the expected cell type
 }
 \examples{
-inputs_dir <- base::system.file("data", package = "MOFAcellulaR")
+inputs_dir <- base::system.file("extdata", package = "MOFAcellulaR")
 load(file.path(inputs_dir, "testpbcounts.rda"))
 load(file.path(inputs_dir, "testcoldata.rda"))
 

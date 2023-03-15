@@ -3,16 +3,24 @@ Title: Multicellular Factor Analysis Using MOFA
 Version: 0.0.0.9000
 Authors@R: 
     person("Ricardo O.", "Ramirez Flores", , "roramirezf@uni-heidelberg.de", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           comment = c(ORCID = "0000-0003-0087-371X"))
 Description: Functions to estimate multicellular programs from single cell data using MOFA.
-License: GPL (>= 3)
+License: GPL (>= 3) + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Depends: 
-    R (>= 2.10),
-    SummarizedExperiment
+    R (>= 3.5.0),
+    SummarizedExperiment,
+    MOFA2,
+    ComplexHeatmap,
+    grid,
+    grDevices,
+    circlize,
+    uwot,
+    ggplot2
 Imports: 
+    broom,
     dplyr,
     edgeR,
     magrittr,
@@ -21,3 +29,7 @@ Imports:
     scran,
     tibble,
     tidyr
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

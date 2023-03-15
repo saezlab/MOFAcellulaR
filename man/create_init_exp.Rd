@@ -23,7 +23,7 @@ It collects in a single object the pseudobulk counts of a single cell experiment
 and its annotations.
 }
 \examples{
-inputs_dir <- base::system.file("data", package = "MOFAcellulaR")
+inputs_dir <- base::system.file("extdata", package = "MOFAcellulaR")
 load(file.path(inputs_dir, "testpbcounts.rda"))
 load(file.path(inputs_dir, "testcoldata.rda"))
 pb_obj <- create_init_exp(counts = testpbcounts,  coldata = testcoldata)

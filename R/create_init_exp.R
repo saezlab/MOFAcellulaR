@@ -19,7 +19,7 @@
 #' @import S4Vectors
 #'
 #' @examples
-#' inputs_dir <- base::system.file("data", package = "MOFAcellulaR")
+#' inputs_dir <- base::system.file("extdata", package = "MOFAcellulaR")
 #' load(file.path(inputs_dir, "testpbcounts.rda"))
 #' load(file.path(inputs_dir, "testcoldata.rda"))
 #' pb_obj <- create_init_exp(counts = testpbcounts,  coldata = testcoldata)
@@ -57,7 +57,7 @@ create_init_exp <- function(counts, coldata) {
 #' @import dplyr
 #'
 #' @examples
-#' inputs_dir <- base::system.file("data", package = "MOFAcellulaR")
+#' inputs_dir <- base::system.file("extdata", package = "MOFAcellulaR")
 #' load(file.path(inputs_dir, "testpbcounts.rda"))
 #' load(file.path(inputs_dir, "testcoldata.rda"))
 #' pb_obj <- create_init_exp(counts = testpbcounts,  coldata = testcoldata)
@@ -87,12 +87,12 @@ pb_dat2MOFA <- function(pb_dat_list) {
     dat %>%
       base::as.data.frame() %>%
       tibble::rownames_to_column("feature") %>%
-      tidyr::pivot_longer(-feature, names_to = "sample", values_to = "value")
+      tidyr::pivot_longer(-.data$feature, names_to = "sample", values_to = "value")
 
   }) %>%
     tibble::enframe(name = "view") %>%
-    tidyr::unnest() %>%
-    dplyr::mutate(feature = paste0(view, "_", feature))
+    tidyr::unnest(cols = c(value)) %>%
+    dplyr::mutate(feature = paste0(.data$view, "_", .data$feature))
 
   return(pb_red)
 

@@ -27,7 +27,7 @@
 #' @import stats
 #'
 #' @examples
-#' inputs_dir <- base::system.file("data", package = "MOFAcellulaR")
+#' inputs_dir <- base::system.file("extdata", package = "MOFAcellulaR")
 #' model <- MOFA2::load_model(file.path(inputs_dir, "testmodel.hdf5"))
 #' metadata <- readRDS(file.path(inputs_dir, "testmetadata.rds"))
 #' metadata$var <- stats::rnorm(nrow(metadata))
@@ -63,7 +63,7 @@ get_associations <- function(model,
     dplyr::select_at(c("sample", test_variable, "Factor", "value")) %>%
     dplyr::group_by(Factor) %>%
     tidyr::nest() %>%
-    dplyr::mutate(pvalue = purrr::map(data, function(dat) {
+    dplyr::mutate(pvalue = purrr::map(.data$data, function(dat) {
 
       # Fit ANOVAs if testing variable is categorical
       if(test_type == "categorical") {
@@ -71,7 +71,7 @@ get_associations <- function(model,
         factor_aov <- stats::aov(as.formula(paste0("value ~ ", test_variable)), data = dat) %>%
           broom::tidy() %>%
           dplyr::filter(term == test_variable) %>%
-          dplyr::select(term, p.value)
+          dplyr::select_at(c("term", "p.value"))
 
         return(factor_aov)
 
@@ -80,7 +80,7 @@ get_associations <- function(model,
         factor_lm <- stats::lm(as.formula(paste0("value ~ ", test_variable)), data = dat) %>%
           broom::tidy() %>%
           dplyr::filter(term == test_variable) %>%
-          dplyr::select(term, p.value)
+          dplyr::select_at(c("term", "p.value"))
 
         return(factor_lm)
 
@@ -92,7 +92,7 @@ get_associations <- function(model,
     dplyr::mutate(adj_pvalue = stats::p.adjust(p.value))
 
   expl_var <- factors %>%
-    dplyr::select(Factor, term, p.value, adj_pvalue)
+    dplyr::select_at(c("Factor", "term", "p.value", "adj_pvalue"))
 
   return(expl_var)
 

@@ -1,0 +1,339 @@
+---
+title: "Running a multicellular factor analysis in a cross-condition single-cell atlas"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{get-started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, message=FALSE, warning=FALSE}
+library(MOFAcellulaR)
+library(dplyr)
+```
+
+## Multicellular factor analysis
+
+We repurposed the statistical framework of multi-omics factor analysis [(MOFA)](https://www.embopress.org/doi/full/10.15252/msb.20178124) and [MOFA+](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02015-1) to analyze cross-condition single cell atlases. These atlases profile molecular readouts (eg. gene expression) of individual cells per sample that can be classified into groups based on lineage (cell types) or functions (cell states). We assumed that this nested design could be represented as a multi-view dataset of a collection of patients, where each individual view contains the summarized information of all the features of a cell type per patient (eg. pseudobulk). In this data representation there can be as many views as cell types in the original atlas. MOFA then is used to estimate a latent space that captures the variability of patients across the distinct cell types. The estimated factors composing the latent space can be interpreted as a multicellular program that captures coordinated expression patterns of distinct cell types. The cell type specific gene expression patterns can be retrieved from the factor loadings, where each gene of each cell type would contain a weight that contributes to the factor score. Similarly, as in the application of MOFA to multiomics data, the factors can be used for an unsupervised analysis of samples or can be associated to biological or technical covariates of the original samples. Additionally, the reconstruction errors per view and factor can be used to prioritize cell types associated with covariates of interest.
+
+## Data
+
+Here we show how to use MOFA for a multicellular factor analysis by applying it to a cross-condition atlas.
+
+As an example, we will use a toy dataset containing the pseudobulk gene expression information of 22 samples across 3 cell types
+
+```{r import}
+inputs_dir <- base::system.file("extdata", package = "MOFAcellulaR")
+load(file.path(inputs_dir, "testpbcounts.rda"))
+load(file.path(inputs_dir, "testcoldata.rda"))
+```
+
+```{r}
+testcoldata %>%
+  dplyr::select(donor_id) %>%
+  dplyr::group_by(donor_id) %>%
+  dplyr::summarise(n()) %>%
+  head()
+```
+
+```{r}
+testcoldata %>%
+  dplyr::select(cell_type) %>%
+  dplyr::group_by(cell_type) %>%
+  dplyr::summarise(n()) %>%
+  head()
+```
+
+## 1. Processing pseudobulk expression profiles
+
+We will assume that regardless of the preferred way of storing your pseudobulk data, a count matrix (genes in rows, samples in columns) will be accompanied by the annotations of the columns that contain the information of the cell type and sample of origin of the pseudobulk expression vector.
+
+If you are starting from a single cell data set, we recommend you to use functions like `scuttle::summarizeAssayByGroup()` to generate objects as the ones used in this vignette.
+
+In the example data `testpbcounts` contains a expression matrix.
+
+```{r}
+testpbcounts[1:5,1:5]
+```
+
+And `testcoldata` contains the information of each sample (column) of `testpbcounts` in a named `data.frame`.
+
+```{r}
+testcoldata %>%
+  head()
+```
+
+The necessary components of `testcoldata` are the `donor_id` column that refers to the sample of interest (eg. patient), `cell_type` that will define the views in our multicellular factor analysis, and `cell_counts` that will allow to perform quality control filtering.
+
+`MOFAcellulaR` provides a series of useful tools to go from these two data objects to a MOFA ready dataframe that we be used to performed group factor analysis.
+
+First, we create an initial `SummarizedExperiment` object that will allow to make all the processing.
+
+```{r}
+pb_obj <- MOFAcellulaR::create_init_exp(counts = testpbcounts,  coldata = testcoldata)
+```
+
+Then, we will create a list of `SummarizedExperiment` of samples and cell-types of interest.
+
+An initial quality control step is to filter out pseudobulk samples coming from a low number of cells, under the assumption that the gene count estimates coming from a small population of cells may be unreliable. The actual number of cells needed for a pseudobulk profile is arbitrary and it is an empirical decision of the analyzer. If no sample filtering is required, it is possible also to define that in the helping functions.
+
+In this example we only work with cardiomyocytes (CM) and fibroblasts (Fib)
+
+```{r}
+ct_list <- MOFAcellulaR::filt_profiles(pb_dat = pb_obj,
+                          cts = c("Fib","CM"),
+                          ncells = 0,
+                          counts_col = "cell_counts", # This refers to the column name in testcoldata where the number of cells per profile was stored
+                          ct_col = "cell_type") # This refers to the column name in testcoldata where the cell-type label was stored
+```
+
+The next step, requires to identify lowly expressed genes and highly variable genes per cell-type independently. We reuse the same criteria as `edgeR` to identify lowly expressed genes. Similarly as the number of cells, this parameters should be decided by the analyst.
+
+```{r}
+ct_list <- MOFAcellulaR::filt_gex_byexpr(pb_dat_list = ct_list,
+                            min.count = 5, # Modify!!
+                            min.prop = 0.25) # Modify!!
+```
+
+Since we override the group parameter, all samples are assumed to be of the same group.
+
+Normalization of pseudobulk expression profiles using Trimmed Mean of the M-values (TMM) from `edgeR::calcNormFactors` is then performed
+
+```{r}
+ct_list <- MOFAcellulaR::tmm_trns(pb_dat_list = ct_list,
+                                  scale_factor = 1000000)
+```
+
+Identification of highly variable genes per cell type is performed with `scran::getTopHVGs()`, however you can also provide your own list of highly variable genes if preferred
+
+```{r}
+ct_list <- MOFAcellulaR::filt_gex_byhvg(pb_dat_list = ct_list,
+                                        prior_hvg = NULL,
+                                        var.threshold = 0)
+```
+
+Finally, it is possible to veto genes to be part of the model for specific cell-types. The way we deal with this is to create a dictionary of exclusive genes for a given cell-type. These could be for example marker genes.
+
+In this vignette, we will explicitly make TTN a gene exclusive for cardiomyocytes, and POSTN exclusive to fibroblasts based on prior knowledge, avoiding these to be background genes for other cell types. 
+
+```{r}
+prior_hvg_test <- list("CM" = c("TTN"),
+                        "Fib" = c("POSTN"))
+
+ct_list <- MOFAcellulaR::filt_gex_bybckgrnd(pb_dat_list = ct_list,
+                                            prior_mrks = prior_hvg_test)
+```
+
+To convert the cell-type list into a MOFA ready object we just run the following line
+
+```{r}
+multiview_dat <- pb_dat2MOFA(pb_dat_list = ct_list)
+```
+
+All the previous steps can be concatenated using `%>%` for your convenience
+
+```{r,eval=FALSE}
+
+multiview_dat <- MOFAcellulaR::filt_profiles(pb_dat = pb_obj,
+                          cts = c("Fib","CM", "Endo"),
+                          ncells = 0,
+                          counts_col = "cell_counts", # This refers to the column name in testcoldata where the number of cells per profile was stored
+                          ct_col = "cell_type") %>%
+  MOFAcellulaR::filt_gex_byexpr(pb_dat_list = .,
+                                min.count = 5,
+                                min.prop = 0.25) %>%
+  MOFAcellulaR::tmm_trns(pb_dat_list = .,
+                         scale_factor = 1000000) %>%
+  MOFAcellulaR::filt_gex_byhvg(pb_dat_list = .,
+                               prior_hvg = NULL,
+                               var.threshold = 0) %>%
+  MOFAcellulaR::filt_gex_bybckgrnd(pb_dat_list = ct_list,
+                                            prior_mrks = prior_hvg_test) %>%
+  MOFAcellulaR::pb_dat2MOFA(pb_dat_list = ct_list)
+  
+```
+
+## 2. Fitting a MOFA model
+
+Once the single cell data is transformed into a multi-view representation, now we can use MOFA to run a multicellular factor analysis.
+
+We will try to identify 6 factors that explain the variability between patients captured by the seven different cell-types. 
+
+MOFA self-regularizes and will indicate a potential optimal number of factors useful to describe the variability of your data, we advise to follow the indications of [MOFA](https://biofam.github.io/MOFA2/tutorials.html)
+
+Every factor captures coordination of gene expression across cell types and will be called multicellular gene factors for the rest of the vignette.
+
+It is important to clarify what these factors capture:
+
+a) Coordinated expression of identical genes (generalistic response) across cell-types
+b) Coordinated expression of different genes (cell-type specific response) across cell-types
+
+Fitting the model should take seconds.
+
+```{r, eval=FALSE}
+MOFAobject <- MOFA2::create_mofa(multiview_dat)
+
+data_opts <- MOFA2::get_default_data_options(MOFAobject)
+train_opts <- MOFA2::get_default_training_options(MOFAobject)
+model_opts <- MOFA2::get_default_model_options(MOFAobject)
+
+# This avoids the regularization of multicellular programs per cell type.
+# This avoids less sparse gene weights
+model_opts$spikeslab_weights <- FALSE 
+
+# Define the number of factors needed
+model_opts$num_factors <- 5
+
+# Prepare MOFA model:
+MOFAobject <- MOFA2::prepare_mofa(object = MOFAobject,
+                           data_options = data_opts,
+                           model_options = model_opts,
+                           training_options = train_opts)
+  
+outfile <- file.path("./vignettemodel.hdf5")
+
+model <- MOFA2::run_mofa(MOFAobject, outfile)
+```
+
+```{r, eval=T, echo=F}
+model <- MOFA2::load_model(file.path(inputs_dir, "testmodel.hdf5"))
+```
+
+## 3. Exploring the MOFA model
+
+### Exporting model outputs
+
+For convenience, we provide functions to explore the results of your model complementary to the ones already provided by [MOFA](https://biofam.github.io/MOFA2/tutorials.html) documentation.
+
+These functions are based on the idea that users will have extra information regarding the samples they analyzed. We provide supplemental annotations of the toy object.
+
+```{r}
+metadata <- readRDS(file.path(inputs_dir, "testmetadata.rds"))
+head(metadata)
+```
+
+Our sample meta data can also contain continous measurements if needed, for example a clinical variable `fake_var`
+
+```{r}
+set.seed(145)
+metadata$fake_var <- stats::rnorm(nrow(metadata))
+```
+
+You can obtain the factor scores of each of your samples by calling the next function
+
+```{r}
+all_factors <- MOFAcellulaR::get_tidy_factors(model = model,
+                                 metadata = metadata,
+                                 factor = "all",
+                                 sample_id_column = "sample")
+
+head(all_factors)
+```
+
+You can specify also which factor you are interested and perform any type of statistical analysis of interest
+
+```{r}
+Factor3 <- MOFAcellulaR::get_tidy_factors(model = model,
+                             metadata = metadata,
+                             factor = "Factor3",
+                             sample_id_column = "sample")
+
+head(Factor3)
+```
+
+Each factor is composed by a linear combination of genes per cell-type, and it is possible to extract the weights for each factor with a practical function
+
+```{r}
+gene_weights <- MOFAcellulaR::get_geneweights(model = model, factor = "Factor1")
+head(gene_weights)
+```
+
+These gene loadings are essential if you want to map cell-type specific processes to bulk and spatial transcriptomics, since they can be treated as gene sets. If you are interested in this, we refer to [decoupleR](https://saezlab.github.io/decoupleR/#:~:text=decoupleR%20is%20a%20Bioconductor%20package,and%20weight%20of%20network%20interactions.) and [decoupler-py](https://decoupler-py.readthedocs.io/en/latest/) that explain in detail how to perform enrichment analysis with this type of weighted gene sets.
+
+Alternatively, the gene loadings can be reduced to functional or cellular processes by enriching gene sets provided by literature in each cell-type specific signature. Treat your gene loading matrix as scaled transcriptomics and perform your enrichment test of preference, see decoupleR's documentation for this.
+
+### Visualizing sample variability
+
+As an initial exploratory analysis, one may want to visualize samples in a 2D space, here we provide a plotting function that allows to perform this using UMAPs or multidimensional-scaling plots. 
+
+```{r, fig.height = 3, fig.width = 4}
+UMAP_embedding <- MOFAcellulaR::plot_sample_2D(model = model,
+                                               method = "UMAP",
+                                               metadata = metadata,
+                                               sample_id_column = "sample",
+                                               color_by = "patient_group")
+
+```
+
+### Performing statistical analyses
+
+To facilitate the exploration of the model, we provide a wrapper that performs association tests between factor scores and covariates of the samples, the covariates can be continuous or categorical. In the case of continuous variables a linear model is fitted. For categorical variables, analysis of variance (ANOVA) is performed.
+
+```{r}
+categorical_assoc <- MOFAcellulaR::get_associations(model = model,
+                                      metadata = metadata,
+                                       sample_id_column = "sample",
+                                       test_variable = "patient_group",
+                                       test_type = "categorical",
+                                       group = FALSE)
+
+categorical_assoc
+```
+
+
+```{r}
+continuous_assoc <- MOFAcellulaR::get_associations(model = model,
+                                       metadata = metadata,
+                                       sample_id_column = "sample",
+                                       test_variable = "fake_var",
+                                       test_type = "continuous",
+                                       group = FALSE)
+
+continuous_assoc
+```
+
+### Visualizing the complete model
+
+With MOFA you are able to interpret your model in distinct ways:
+
+1) First it reduces the variability of samples across cell-types inferring a latent space. See `MOFAcellulaR::get_tidy_factors`
+
+2) The latent space captures certain percentage of the variability of the original data, in this case the variability of samples within a single cell-type. A full exploration of the model can be done using:
+
+```{r}
+model@cache$variance_explained$r2_total
+```
+
+3) Each latent variable contributes in explaining the variability of the original data and that can also be used to prioritize signals.
+
+```{r}
+model@cache$variance_explained$r2_per_factor$single_group["Factor1",,drop = F]
+```
+
+For example, in this model, we previously identified Factor1 to be associated with our patient grouping, and based on the explaned variance, we can say that while it represents a multicellular program of the three cell-types we analyzed, Factor1 mainly captures the variability of samples within CMs.
+
+4) Each latent variable represents a multicellular program that can be explored in detail with `MOFAcellulaR::get_geneweights`
+
+To visualize the distinct components of the model, we provide a heatmap plotting function that collects the distinct levels of results of the model
+
+```{r, fig.width=4.5, fig.height=6}
+assoc_list = list("categorical" = categorical_assoc, "continuous" = continuous_assoc)
+
+plot_MOFA_hmap(model = model,
+                group = FALSE,
+                metadata = metadata,
+                sample_id_column = "sample",
+                sample_anns = c("patient_group", "batch", "fake_var"),
+                assoc_list = assoc_list)
+```
+
+```{r}
+utils::sessionInfo()
+```

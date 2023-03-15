@@ -22,7 +22,7 @@ single data frame ready to be used in MOFA. Features are modified
 so as to reflect their cell type of origin.
 }
 \examples{
-inputs_dir <- base::system.file("data", package = "MOFAcellulaR")
+inputs_dir <- base::system.file("extdata", package = "MOFAcellulaR")
 load(file.path(inputs_dir, "testpbcounts.rda"))
 load(file.path(inputs_dir, "testcoldata.rda"))
 pb_obj <- create_init_exp(counts = testpbcounts,  coldata = testcoldata)

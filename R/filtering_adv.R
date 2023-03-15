@@ -23,7 +23,7 @@
 #' @import scran
 #'
 #' @examples
-#' inputs_dir <- base::system.file("data", package = "MOFAcellulaR")
+#' inputs_dir <- base::system.file("extdata", package = "MOFAcellulaR")
 #' load(file.path(inputs_dir, "testpbcounts.rda"))
 #' load(file.path(inputs_dir, "testcoldata.rda"))
 #'
@@ -122,7 +122,7 @@ filt_gex_byhvg <- function(pb_dat_list,
 #' @import dplyr
 #'
 #' @examples
-#' inputs_dir <- base::system.file("data", package = "MOFAcellulaR")
+#' inputs_dir <- base::system.file("extdata", package = "MOFAcellulaR")
 #' load(file.path(inputs_dir, "testpbcounts.rda"))
 #' load(file.path(inputs_dir, "testcoldata.rda"))
 #'
@@ -157,18 +157,18 @@ filt_gex_bybckgrnd <- function(pb_dat_list, prior_mrks) {
   # Current genes per view
   ct_genes <- purrr::map(pb_dat_list, rownames) %>%
     tibble::enframe("view","gene") %>%
-    tidyr::unnest()
+    tidyr::unnest(.data$gene)
 
   prior_mrks_df <- prior_mrks %>%
     tibble::enframe("view_origin","gene") %>%
-    tidyr::unnest() %>%
+    tidyr::unnest(.data$gene) %>%
     dplyr::mutate(marker_gene = TRUE)
 
   # Here are genes that aren't cell type markers
   ok_genes <- ct_genes %>%
     dplyr::left_join(prior_mrks_df, by = "gene") %>%
-    dplyr::filter(is.na(marker_gene)) %>%
-    dplyr::select(view, gene)
+    dplyr::filter(is.na(.data$marker_gene)) %>%
+    dplyr::select_at(c("view", "gene"))
 
   # Here are genes selected as HVG that are marker
   # genes, we will keep only genes if they appear
@@ -176,15 +176,15 @@ filt_gex_bybckgrnd <- function(pb_dat_list, prior_mrks) {
   not_bckground_genes <- ct_genes %>%
     dplyr::left_join(prior_mrks_df, by = "gene") %>%
     stats::na.omit() %>%
-    tidyr::unnest() %>%
-    dplyr::filter(view == view_origin) %>%
-    dplyr::select(view, gene)
+    tidyr::unnest(c()) %>%
+    dplyr::filter(.data$view == .data$view_origin) %>%
+    dplyr::select_at(c("view", "gene"))
 
   clean_hvgs <- dplyr::bind_rows(ok_genes,
                           not_bckground_genes) %>%
     dplyr::group_by(view) %>%
     tidyr::nest() %>%
-    dplyr::mutate(data = map(data, ~.x[[1]])) %>%
+    dplyr::mutate(data = map(.data$data, ~.x[[1]])) %>%
     tibble::deframe()
 
   pb_dat_list <- pb_dat_list %>%

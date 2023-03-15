@@ -22,7 +22,7 @@
 #' @import dplyr
 #'
 #' @examples
-#' inputs_dir <- base::system.file("data", package = "MOFAcellulaR")
+#' inputs_dir <- base::system.file("extdata", package = "MOFAcellulaR")
 #' model <- MOFA2::load_model(file.path(inputs_dir, "testmodel.hdf5"))
 #' metadata <- readRDS(file.path(inputs_dir, "testmetadata.rds"))
 #' all_factors <- get_tidy_factors(model = model,
@@ -44,19 +44,19 @@ get_tidy_factors <-  function(model,
     if(factor == "all") {
       #Here we return all factors and bind the distinct groups
       factor_scores <- MOFA2::get_factors(model, factors = "all") %>%
-        base::do.call(rbind, .)
+        base::do.call(base::rbind, .)
 
     } else {
       #Here we return specific factors
       factor_scores <- MOFA2::get_factors(model, factors = "all") %>%
-        base::do.call(rbind, .)[, factor, drop= F]
+        base::do.call(base::rbind, .)[, factor, drop= F]
 
     }
 
   } else {
 
     if(factor == "all") {
-      #Here we return all factors and bind the distinct groups
+      #Here we return all factors
       factor_scores <- MOFA2::get_factors(model, factors = "all")[[1]]
     } else {
       #Here we return specific factors
@@ -99,7 +99,7 @@ get_tidy_factors <-  function(model,
 #' @import dplyr
 #'
 #' @examples
-#' inputs_dir <- base::system.file("data", package = "MOFAcellulaR")
+#' inputs_dir <- base::system.file("extdata", package = "MOFAcellulaR")
 #' model <- MOFA2::load_model(file.path(inputs_dir, "testmodel.hdf5"))
 #' gene_weights <- get_geneweights(model = model,
 #'                                 factor = "Factor1")
