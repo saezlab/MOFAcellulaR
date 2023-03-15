@@ -1,0 +1,65 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+## Overview
+
+Cross-condition single-cell atlases are essential in the
+characterization of human disease. In these complex experimental
+designs, patient samples are profiled across distinct cell types and
+clinical conditions to describe disease processes at the cellular level.
+However, most of the current analysis tools are limited to pairwise
+cross-condition comparisons, disregarding the multicellular nature of
+disease processes and the effects of other biological and technical
+factors in the variation of gene expression. Here we propose a
+computational framework for an unsupervised analysis of samples from
+cross-condition single cell atlases and for the identification of
+multicellular programs associated with disease. Our framework based on
+probabilistic factor analysis implemented in
+[MOFA](https://www.embopress.org/doi/full/10.15252/msb.20178124) and
+[MOFA+](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02015-1)
+incorporates the variation of patient samples across cell types and
+allows the joint analysis of independent patient cohorts facilitating
+study integration.
+
+`MOFAcellulaR` is package that facilitates the implementation of MOFA
+models to single cell data
+
+<img src="https://www.dropbox.com/s/4d7xbtz2lc252r3/Fig1.png?raw=1" align="center" width="800">
+
+## Installation
+
+You can install the latest stable and development versions from GitHub
+with `remotes`:
+
+- stable
+
+``` r
+# install.packages("remotes")
+remotes::install_github("saezlab/MOFAcellulaR")
+```
+
+## Usage
+
+Start by reading `vignette("MOFAcellulaR")` to learn how to use the
+helping functions of **MOFAcellulaR** to run your MOFA models.
+
+## Citation
+
+If you use **MOFAcellulaR** for your research please cite the [following
+publication](https://www.biorxiv.org/content/10.1101/2023.02.23.529642v1):
+
+> Ramirez-Flores RO, Lanzer JD, Dimitrov D, Velten B, Saez-Rodriguez J.
+> “Multicellular factor analysis for a tissue-centric understanding of
+> disease” BioRxiv. 2023. DOI:
+> [10.1101/2023.02.23.529642](https://www.biorxiv.org/content/10.1101/2023.02.23.529642v1)
+
+Also, don’t forget to cite MOFA’s original publications
+
+> Argelaguet R, Arnol D, Bredikhin D, Deloro Y, Velten B, Marioni JC &
+> Stegle O (2020) MOFA+: a statistical framework for comprehensive
+> integration of multi-modal single-cell data. Genome Biol 21: 111
+
+> Argelaguet R, Velten B, Arnol D, Dietrich S, Zenz T, Marioni JC,
+> Buettner F, Huber W & Stegle O (2018) Multi-Omics Factor Analysis-a
+> framework for unsupervised integration of multi-omics data sets. Mol
+> Syst Biol 14: e8124
