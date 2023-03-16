@@ -33,3 +33,4 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+URL: https://saezlab.github.io/MOFAcellulaR/
