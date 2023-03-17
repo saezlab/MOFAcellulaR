@@ -139,9 +139,11 @@ multiview_dat <- pb_dat2MOFA(pb_dat_list = ct_list)
 
 All the previous steps can be concatenated using `%>%` for your convenience
 
-```{r,eval=FALSE}
+```{r,eval=TRUE, warning=FALSE}
 
-multiview_dat <- MOFAcellulaR::filt_profiles(pb_dat = pb_obj,
+multiview_dat <- MOFAcellulaR::create_init_exp(counts = testpbcounts,  
+                                               coldata = testcoldata) %>%
+  MOFAcellulaR::filt_profiles(pb_dat = .,
                           cts = c("Fib","CM", "Endo"),
                           ncells = 0,
                           counts_col = "cell_counts", # This refers to the column name in testcoldata where the number of cells per profile was stored
@@ -154,10 +156,9 @@ multiview_dat <- MOFAcellulaR::filt_profiles(pb_dat = pb_obj,
   MOFAcellulaR::filt_gex_byhvg(pb_dat_list = .,
                                prior_hvg = NULL,
                                var.threshold = 0) %>%
-  MOFAcellulaR::filt_gex_bybckgrnd(pb_dat_list = ct_list,
+  MOFAcellulaR::filt_gex_bybckgrnd(pb_dat_list = .,
                                             prior_mrks = prior_hvg_test) %>%
-  MOFAcellulaR::pb_dat2MOFA(pb_dat_list = ct_list)
-  
+  MOFAcellulaR::pb_dat2MOFA(pb_dat_list = .)
 ```
 
 ## 2. Fitting a MOFA model
@@ -314,7 +315,7 @@ model@cache$variance_explained$r2_total
 3) Each latent variable contributes in explaining the variability of the original data and that can also be used to prioritize signals.
 
 ```{r}
-model@cache$variance_explained$r2_per_factor$single_group["Factor1",,drop = F]
+model@cache$variance_explained$r2_per_factor$single_group[,,drop = F]
 ```
 
 For example, in this model, we previously identified Factor1 to be associated with our patient grouping, and based on the explaned variance, we can say that while it represents a multicellular program of the three cell-types we analyzed, Factor1 mainly captures the variability of samples within CMs.
