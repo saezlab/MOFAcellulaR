@@ -259,7 +259,9 @@ the following line</p>
 for your convenience</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">multiview_dat</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_profiles.html">filt_profiles</a></span><span class="op">(</span>pb_dat <span class="op">=</span> <span class="va">pb_obj</span>,</span>
+<span><span class="va">multiview_dat</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/create_init_exp.html">create_init_exp</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="va">testpbcounts</span>,  </span>
+<span>                                               coldata <span class="op">=</span> <span class="va">testcoldata</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_profiles.html">filt_profiles</a></span><span class="op">(</span>pb_dat <span class="op">=</span> <span class="va">.</span>,</span>
 <span>                          cts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Fib"</span>,<span class="st">"CM"</span>, <span class="st">"Endo"</span><span class="op">)</span>,</span>
 <span>                          ncells <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>                          counts_col <span class="op">=</span> <span class="st">"cell_counts"</span>, <span class="co"># This refers to the column name in testcoldata where the number of cells per profile was stored</span></span>
@@ -272,10 +274,9 @@ for your convenience</p>
 <span>  <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_gex_byhvg.html">filt_gex_byhvg</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">.</span>,</span>
 <span>                               prior_hvg <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>                               var.threshold <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_gex_bybckgrnd.html">filt_gex_bybckgrnd</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">ct_list</span>,</span>
+<span>  <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_gex_bybckgrnd.html">filt_gex_bybckgrnd</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">.</span>,</span>
 <span>                                            prior_mrks <span class="op">=</span> <span class="va">prior_hvg_test</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/pb_dat2MOFA.html">pb_dat2MOFA</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">ct_list</span><span class="op">)</span></span>
-<span>  </span></code></pre></div>
+<span>  <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/pb_dat2MOFA.html">pb_dat2MOFA</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">.</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="fitting-a-mofa-model">2. Fitting a MOFA model<a class="anchor" aria-label="anchor" href="#fitting-a-mofa-model"></a>
@@ -492,9 +493,13 @@ using:</p></li>
 the original data and that can also be used to prioritize signals.</li>
 </ol>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">model</span><span class="op">@</span><span class="va">cache</span><span class="op">$</span><span class="va">variance_explained</span><span class="op">$</span><span class="va">r2_per_factor</span><span class="op">$</span><span class="va">single_group</span><span class="op">[</span><span class="st">"Factor1"</span>,,drop <span class="op">=</span> <span class="cn">F</span><span class="op">]</span></span>
-<span><span class="co">#&gt;               CM     Endo      Fib</span></span>
-<span><span class="co">#&gt; Factor1 42.44068 36.18869 27.63692</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">model</span><span class="op">@</span><span class="va">cache</span><span class="op">$</span><span class="va">variance_explained</span><span class="op">$</span><span class="va">r2_per_factor</span><span class="op">$</span><span class="va">single_group</span><span class="op">[</span>,,drop <span class="op">=</span> <span class="cn">F</span><span class="op">]</span></span>
+<span><span class="co">#&gt;                CM       Endo       Fib</span></span>
+<span><span class="co">#&gt; Factor1 42.440678 36.1886863 27.636917</span></span>
+<span><span class="co">#&gt; Factor2 16.687453 20.8902217 20.198155</span></span>
+<span><span class="co">#&gt; Factor3  9.965168  8.5866332  9.443090</span></span>
+<span><span class="co">#&gt; Factor4  5.140941  0.8256951  2.962209</span></span>
+<span><span class="co">#&gt; Factor5  2.498294  1.1868970  1.576150</span></span></code></pre></div>
 <p>For example, in this model, we previously identified Factor1 to be
 associated with our patient grouping, and based on the explaned
 variance, we can say that while it represents a multicellular program of
