@@ -54,7 +54,8 @@
 <span>  <span class="va">metadata</span>,</span>
 <span>  sample_id_column <span class="op">=</span> <span class="st">"sample"</span>,</span>
 <span>  <span class="va">sample_anns</span>,</span>
-<span>  assoc_list <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  assoc_list <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  col_rows <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -82,6 +83,12 @@
 
 <dt>assoc_list</dt>
 <dd><p>A named list collecting results of <code><a href="get_associations.html">MOFAcellulaR::get_associations()</a></code></p></dd>
+
+
+<dt>col_rows</dt>
+<dd><p>A named list of lists containing at the first index, all sample_anns used,
+and at the second index, all levels of an annotation within the first index.
+As required by <code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/rowAnnotation.html" class="external-link">ComplexHeatmap::rowAnnotation</a></code> col parameter.</p></dd>
 
 </dl></div>
     <div class="section level2">
