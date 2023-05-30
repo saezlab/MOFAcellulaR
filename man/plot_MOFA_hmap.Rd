@@ -10,7 +10,8 @@ plot_MOFA_hmap(
   metadata,
   sample_id_column = "sample",
   sample_anns,
-  assoc_list = NULL
+  assoc_list = NULL,
+  col_rows = NULL
 )
 }
 \arguments{
@@ -25,6 +26,10 @@ plot_MOFA_hmap(
 \item{sample_anns}{A vector containing strings that refer to the columns in \code{metadata} to be used to annotate samples}
 
 \item{assoc_list}{A named list collecting results of \code{MOFAcellulaR::get_associations()}}
+
+\item{col_rows}{A named list of lists containing at the first index, all sample_anns used,
+and at the second index, all levels of an annotation within the first index.
+As required by \code{ComplexHeatmap::rowAnnotation} col parameter.}
 }
 \value{
 A dataframe in a tidy format containing the manifold and the scatter plot

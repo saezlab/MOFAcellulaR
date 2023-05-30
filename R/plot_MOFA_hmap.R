@@ -15,6 +15,9 @@
 #' @param sample_id_column A string character that refers to the column in `metadata` where the sample identifier is located.
 #' @param sample_anns A vector containing strings that refer to the columns in `metadata` to be used to annotate samples
 #' @param assoc_list A named list collecting results of `MOFAcellulaR::get_associations()`
+#' @param col_rows A named list of lists containing at the first index, all sample_anns used,
+#' and at the second index, all levels of an annotation within the first index.
+#' As required by `ComplexHeatmap::rowAnnotation` col parameter.
 #'
 #' @return A dataframe in a tidy format containing the manifold and the scatter plot
 #' @export
@@ -64,7 +67,8 @@ plot_MOFA_hmap <- function(model,
                            metadata,
                            sample_id_column = "sample",
                            sample_anns,
-                           assoc_list = NULL) {
+                           assoc_list = NULL,
+                           col_rows = NULL) {
 
   # Build general aesthetics
   # aesthetics definition of the borders
@@ -99,9 +103,20 @@ plot_MOFA_hmap <- function(model,
     as.data.frame()
 
   # Patient annotations -------------------------------------------------------------
-  row_ha <- ComplexHeatmap::rowAnnotation(df = as.data.frame(row_anns),
-                                          gap = grid::unit(2.5, "mm"),
-                                          border = TRUE)
+  if(is.null(col_rows)) {
+
+    row_ha <- ComplexHeatmap::rowAnnotation(df = as.data.frame(row_anns),
+                                            gap = grid::unit(2.5, "mm"),
+                                            border = TRUE)
+
+  } else {
+
+    row_ha <- ComplexHeatmap::rowAnnotation(df = as.data.frame(row_anns),
+                                            gap = grid::unit(2.5, "mm"),
+                                            border = TRUE,
+                                            col = col_rows)
+
+  }
 
   # 2. Column annotations (R2 and associations)
 
