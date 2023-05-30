@@ -10,6 +10,7 @@ get_associations(
   sample_id_column,
   test_variable,
   test_type = "categorical",
+  categorical_type = "parametric",
   group = FALSE
 )
 }
@@ -22,7 +23,9 @@ get_associations(
 
 \item{test_variable}{A string character that refers to the column in \code{metadata} where the covariate to be tested is located.}
 
-\item{test_type}{A string character ("categorical", "continuous")}
+\item{test_type}{A string character ("categorical", "continuous").}
+
+\item{categorical_type}{A string character ("parametric", "not_parametric"), only applies for categorical data.}
 
 \item{group}{Boolean flag TRUE/FALSE, to specify if a grouped MOFA model is provided.}
 }

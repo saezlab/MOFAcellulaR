@@ -13,7 +13,8 @@
 #' @param metadata A data frame containing the annotations of the samples included in the MOFA model.
 #' @param sample_id_column A string character that refers to the column in `metadata` where the sample identifier is located.
 #' @param test_variable A string character that refers to the column in `metadata` where the covariate to be tested is located.
-#' @param test_type A string character ("categorical", "continuous")
+#' @param test_type A string character ("categorical", "continuous").
+#' @param categorical_type A string character ("parametric", "not_parametric"), only applies for categorical data.
 #' @param group Boolean flag TRUE/FALSE, to specify if a grouped MOFA model is provided.
 #'
 #'
@@ -50,6 +51,7 @@ get_associations <- function(model,
                              sample_id_column,
                              test_variable,
                              test_type = "categorical",
+                             categorical_type = "parametric",
                              group = FALSE) {
 
   factors <- get_tidy_factors(model = model,
@@ -68,12 +70,25 @@ get_associations <- function(model,
       # Fit ANOVAs if testing variable is categorical
       if(test_type == "categorical") {
 
-        factor_aov <- stats::aov(as.formula(paste0("value ~ ", test_variable)), data = dat) %>%
-          broom::tidy() %>%
-          dplyr::filter(term == test_variable) %>%
-          dplyr::select_at(c("term", "p.value"))
+        if(categorical_type == "parametric") {
 
-        return(factor_aov)
+          factor_aov <- stats::aov(as.formula(paste0("value ~ ", test_variable)), data = dat) %>%
+            broom::tidy() %>%
+            dplyr::filter(term == test_variable) %>%
+            dplyr::select_at(c("term", "p.value"))
+
+          return(factor_aov)
+
+        } else {
+
+          factor_kw <- stats::kruskal.test(as.formula(paste0("value ~ ", test_variable)), data = dat) %>%
+            broom::tidy() %>%
+            dplyr::mutate(term = test_variable) %>%
+            dplyr::select_at(c("term", "p.value"))
+
+          return(factor_kw)
+
+        }
 
       } else {
         # Fit linear model if testing variable is continous
