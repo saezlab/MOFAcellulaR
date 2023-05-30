@@ -118,9 +118,6 @@ pb_dat2MOFA <- function(pb_dat_list) {
 #' @import S4Vectors
 #' @import purrr
 #' @import scran
-#' @import tidyr
-#' @import tibble
-#' @import dplyr
 #'
 #' @examples
 #' inputs_dir <- base::system.file("extdata", package = "MOFAcellulaR")

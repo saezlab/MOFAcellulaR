@@ -24,6 +24,7 @@ Imports:
     dplyr,
     edgeR,
     magrittr,
+    MASS,
     purrr,
     S4Vectors,
     scran,
