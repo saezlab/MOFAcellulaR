@@ -57,6 +57,7 @@ factor scores with covariates of interest provided by the user</p>
 <span>  <span class="va">sample_id_column</span>,</span>
 <span>  <span class="va">test_variable</span>,</span>
 <span>  test_type <span class="op">=</span> <span class="st">"categorical"</span>,</span>
+<span>  categorical_type <span class="op">=</span> <span class="st">"parametric"</span>,</span>
 <span>  group <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -80,7 +81,11 @@ factor scores with covariates of interest provided by the user</p>
 
 
 <dt>test_type</dt>
-<dd><p>A string character ("categorical", "continuous")</p></dd>
+<dd><p>A string character ("categorical", "continuous").</p></dd>
+
+
+<dt>categorical_type</dt>
+<dd><p>A string character ("parametric", "not_parametric"), only applies for categorical data.</p></dd>
 
 
 <dt>group</dt>
