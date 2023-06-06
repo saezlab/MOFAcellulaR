@@ -45,14 +45,14 @@ filt_profiles <- function(pb_dat,
 
   # by n of cells
 
-  ix <- base::which(SummarizedExperiment::colData(pb_dat)[,"cell_counts"] >= ncells)
+  ix <- base::which(SummarizedExperiment::colData(pb_dat)[,counts_col] >= ncells)
   pb_dat <- pb_dat[, ix]
 
   # by views of interest
 
   if(is.null(cts)) {
 
-    cts <- purrr::set_names(SummarizedExperiment::colData(pb_dat)[,"cell_type"] %>%
+    cts <- purrr::set_names(SummarizedExperiment::colData(pb_dat)[,ct_col] %>%
                        unique())
 
   } else {
@@ -63,7 +63,7 @@ filt_profiles <- function(pb_dat,
 
   pb_dat_list <- purrr::map(cts, function(ctype) {
 
-    ix <- base::which(SummarizedExperiment::colData(pb_dat)[,"cell_type"] == ctype)
+    ix <- base::which(SummarizedExperiment::colData(pb_dat)[,ct_col] == ctype)
 
     return(pb_dat[,ix])
 
