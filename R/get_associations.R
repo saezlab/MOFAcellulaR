@@ -63,6 +63,7 @@ get_associations <- function(model,
   # Get factors associated with patient group
   factors <- factors %>%
     dplyr::select_at(c("sample", test_variable, "Factor", "value")) %>%
+    na.omit() %>% # this allows to make subsets of data
     dplyr::group_by(Factor) %>%
     tidyr::nest() %>%
     dplyr::mutate(pvalue = purrr::map(.data$data, function(dat) {
