@@ -141,13 +141,12 @@ plot_MOFA_hmap <- function(model,
   }
 
   # Finally, homogeneous processing
-  r2_per_factor <- model@cache$variance_explained$r2_per_factor %>%
+  r2_per_factor <- r2_list %>%
     do.call(base::cbind, .)
 
   # Gradient colors --------------------------------------------------------------
   # For R2
-  max_r2 <- model@cache$variance_explained$r2_per_factor %>%
-    do.call(base::cbind, .) %>%
+  max_r2 <- r2_per_factor %>%
     max()
 
   if(max_r2 < 90) { # Add tolerance buffer

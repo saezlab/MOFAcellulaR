@@ -325,7 +325,7 @@ For example, in this model, we previously identified Factor1 to be associated wi
 To visualize the distinct components of the model, we provide a heatmap plotting function that collects the distinct levels of results of the model
 
 ```{r, fig.width=4.5, fig.height=6}
-assoc_list = list("categorical" = categorical_assoc, "continuous" = continuous_assoc)
+assoc_list <- list("categorical" = categorical_assoc, "continuous" = continuous_assoc)
 
 plot_MOFA_hmap(model = model,
                 group = FALSE,

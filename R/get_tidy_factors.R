@@ -49,7 +49,9 @@ get_tidy_factors <-  function(model,
     } else {
       #Here we return specific factors
       factor_scores <- MOFA2::get_factors(model, factors = "all") %>%
-        base::do.call(base::rbind, .)[, factor, drop= F]
+        base::do.call(base::rbind, .)
+
+      factor_scores <- factor_scores[, factor, drop= F]
 
     }
 
