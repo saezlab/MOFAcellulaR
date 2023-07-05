@@ -89,9 +89,16 @@ In this example we only work with cardiomyocytes (CM) and fibroblasts (Fib)
 ```{r}
 ct_list <- MOFAcellulaR::filt_profiles(pb_dat = pb_obj,
                           cts = c("Fib","CM"),
-                          ncells = 0,
+                          ncells = 0, # Change to your knowledge!! 
                           counts_col = "cell_counts", # This refers to the column name in testcoldata where the number of cells per profile was stored
                           ct_col = "cell_type") # This refers to the column name in testcoldata where the cell-type label was stored
+```
+
+Once profiles and views have been defined, it is possible to filter complete views that have very few samples
+
+```{r}
+ct_list <- MOFAcellulaR::filt_views_bysamples(pb_dat_list = ct_list,
+                                              nsamples = 2)
 ```
 
 The next step, requires to identify lowly expressed genes and highly variable genes per cell-type independently. We reuse the same criteria as `edgeR` to identify lowly expressed genes. Similarly as the number of cells, this parameters should be decided by the analyst.
@@ -101,8 +108,14 @@ ct_list <- MOFAcellulaR::filt_gex_byexpr(pb_dat_list = ct_list,
                             min.count = 5, # Modify!!
                             min.prop = 0.25) # Modify!!
 ```
+Since we override within MOFAcellulaR the group parameter, all samples are assumed to be of the same condition group.
 
-Since we override the group parameter, all samples are assumed to be of the same group.
+Once genes per view have been defined, it is also possible to filter complete views with a few genes
+
+```{r}
+ct_list <- filt_views_bygenes(pb_dat_list = ct_list,
+                              ngenes = 15)
+```
 
 Normalization of pseudobulk expression profiles using Trimmed Mean of the M-values (TMM) from `edgeR::calcNormFactors` is then performed
 
@@ -131,10 +144,18 @@ ct_list <- MOFAcellulaR::filt_gex_bybckgrnd(pb_dat_list = ct_list,
                                             prior_mrks = prior_hvg_test)
 ```
 
+Once final genes per view have been defined, we can filter again views with not enough genes
+
+```{r}
+ct_list <- MOFAcellulaR::filt_views_bygenes(pb_dat_list = ct_list,
+                                            ngenes = 15)
+```
+
 To convert the cell-type list into a MOFA ready object we just run the following line
 
 ```{r}
-multiview_dat <- pb_dat2MOFA(pb_dat_list = ct_list)
+multiview_dat <- pb_dat2MOFA(pb_dat_list = ct_list, 
+                             sample_column = "donor_id")
 ```
 
 All the previous steps can be concatenated using `%>%` for your convenience
@@ -148,9 +169,13 @@ multiview_dat <- MOFAcellulaR::create_init_exp(counts = testpbcounts,
                           ncells = 0,
                           counts_col = "cell_counts", # This refers to the column name in testcoldata where the number of cells per profile was stored
                           ct_col = "cell_type") %>%
+  MOFAcellulaR::filt_views_bysamples(pb_dat_list = .,
+                                              nsamples = 2) %>%
   MOFAcellulaR::filt_gex_byexpr(pb_dat_list = .,
                                 min.count = 5,
                                 min.prop = 0.25) %>%
+  MOFAcellulaR::filt_views_bygenes(pb_dat_list = .,
+                                   ngenes = 15) %>%
   MOFAcellulaR::tmm_trns(pb_dat_list = .,
                          scale_factor = 1000000) %>%
   MOFAcellulaR::filt_gex_byhvg(pb_dat_list = .,
@@ -158,7 +183,10 @@ multiview_dat <- MOFAcellulaR::create_init_exp(counts = testpbcounts,
                                var.threshold = 0) %>%
   MOFAcellulaR::filt_gex_bybckgrnd(pb_dat_list = .,
                                             prior_mrks = prior_hvg_test) %>%
-  MOFAcellulaR::pb_dat2MOFA(pb_dat_list = .)
+  MOFAcellulaR::filt_views_bygenes(pb_dat_list = .,
+                                   ngenes = 15) %>%
+  MOFAcellulaR::pb_dat2MOFA(pb_dat_list = ., 
+                            sample_column = "donor_id")
 ```
 
 ## 2. Fitting a MOFA model

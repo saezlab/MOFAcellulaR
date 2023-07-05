@@ -99,6 +99,7 @@ get_tidy_factors <-  function(model,
 #'
 #' @import MOFA2
 #' @import dplyr
+#' @import purrr
 #'
 #' @examples
 #' inputs_dir <- base::system.file("extdata", package = "MOFAcellulaR")
@@ -109,13 +110,13 @@ get_geneweights <- function(model, factor) {
 
   factor_loadings <- MOFA2::get_weights(model, as.data.frame = T) %>%
     base::as.data.frame() %>%
-    #Here we take the prefix out
-    dplyr::mutate(feature = strsplit(as.character(feature), "_") %>%
-                    map_chr(., ~ .x[[2]]),
-                  ctype = strsplit(as.character(view), "_") %>%
-                    map_chr(., ~ .x[[1]])) %>%
+    dplyr::mutate(feature = purrr::map2_chr(view, feature, function(v, f) {
+
+      gsub(paste0(v, "_"), "",f)
+
+    })) %>%
+    dplyr::rename("ctype" = view) %>%
     dplyr::rename("factors" = factor) %>%
-    dplyr::select(-view) %>%
     dplyr::filter(factors %in% factor) %>%
     dplyr::select(-factors)
 

@@ -4,7 +4,7 @@
 \alias{pb_dat2MOFA}
 \title{Create MOFA-ready dataframe}
 \usage{
-pb_dat2MOFA(pb_dat_list)
+pb_dat2MOFA(pb_dat_list, sample_column = "donor_id")
 }
 \arguments{
 \item{pb_dat_list}{List of SummarizedExperiment generated from \code{MOFAcellulaR::filt_profiles()}}

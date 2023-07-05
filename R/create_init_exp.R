@@ -76,13 +76,13 @@ create_init_exp <- function(counts, coldata) {
 #'                     scale_factor = 1000000)
 #'
 #' multiview_dat <- pb_dat2MOFA(pb_dat_list = ct_list)
-pb_dat2MOFA <- function(pb_dat_list) {
+pb_dat2MOFA <- function(pb_dat_list, sample_column = "donor_id") {
 
   pb_red <- purrr::map(pb_dat_list, function(x) {
 
     dat <- SummarizedExperiment::assay(x, "logcounts")
 
-    colnames(dat) <- SummarizedExperiment::colData(x)[,"donor_id"]
+    colnames(dat) <- SummarizedExperiment::colData(x)[, sample_column]
 
     dat %>%
       base::as.data.frame() %>%
