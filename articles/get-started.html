@@ -205,15 +205,20 @@ helping functions.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ct_list</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_profiles.html">filt_profiles</a></span><span class="op">(</span>pb_dat <span class="op">=</span> <span class="va">pb_obj</span>,</span>
 <span>                          cts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Fib"</span>,<span class="st">"CM"</span><span class="op">)</span>,</span>
-<span>                          ncells <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>                          ncells <span class="op">=</span> <span class="fl">0</span>, <span class="co"># Change to your knowledge!! </span></span>
 <span>                          counts_col <span class="op">=</span> <span class="st">"cell_counts"</span>, <span class="co"># This refers to the column name in testcoldata where the number of cells per profile was stored</span></span>
 <span>                          ct_col <span class="op">=</span> <span class="st">"cell_type"</span><span class="op">)</span> <span class="co"># This refers to the column name in testcoldata where the cell-type label was stored</span></span></code></pre></div>
+<p>Once profiles and views have been defined, it is possible to filter
+complete views that have very few samples</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ct_list</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_views_bysamples.html">filt_views_bysamples</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">ct_list</span>,</span>
+<span>                                              nsamples <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p>The next step, requires to identify lowly expressed genes and highly
 variable genes per cell-type independently. We reuse the same criteria
 as <code>edgeR</code> to identify lowly expressed genes. Similarly as
 the number of cells, this parameters should be decided by the
 analyst.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ct_list</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_gex_byexpr.html">filt_gex_byexpr</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">ct_list</span>,</span>
 <span>                            min.count <span class="op">=</span> <span class="fl">5</span>, <span class="co"># Modify!!</span></span>
 <span>                            min.prop <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span> <span class="co"># Modify!!</span></span>
@@ -222,18 +227,23 @@ analyst.</p>
 <span></span>
 <span><span class="co">#&gt; Warning in filterByExpr.DGEList(y, design = design, group = group, lib.size =</span></span>
 <span><span class="co">#&gt; lib.size, : All samples appear to belong to the same group.</span></span></code></pre></div>
-<p>Since we override the group parameter, all samples are assumed to be
-of the same group.</p>
+<p>Since we override within MOFAcellulaR the group parameter, all
+samples are assumed to be of the same condition group.</p>
+<p>Once genes per view have been defined, it is also possible to filter
+complete views with a few genes</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ct_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/filt_views_bygenes.html">filt_views_bygenes</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">ct_list</span>,</span>
+<span>                              ngenes <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></code></pre></div>
 <p>Normalization of pseudobulk expression profiles using Trimmed Mean of
 the M-values (TMM) from <code><a href="https://rdrr.io/pkg/edgeR/man/calcNormFactors.html" class="external-link">edgeR::calcNormFactors</a></code> is then
 performed</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ct_list</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/tmm_trns.html">tmm_trns</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">ct_list</span>,</span>
 <span>                                  scale_factor <span class="op">=</span> <span class="fl">1000000</span><span class="op">)</span></span></code></pre></div>
 <p>Identification of highly variable genes per cell type is performed
 with <code><a href="https://rdrr.io/pkg/scran/man/getTopHVGs.html" class="external-link">scran::getTopHVGs()</a></code>, however you can also provide your
 own list of highly variable genes if preferred</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ct_list</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_gex_byhvg.html">filt_gex_byhvg</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">ct_list</span>,</span>
 <span>                                        prior_hvg <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>                                        var.threshold <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
@@ -245,19 +255,25 @@ marker genes.</p>
 cardiomyocytes, and POSTN exclusive to fibroblasts based on prior
 knowledge, avoiding these to be background genes for other cell
 types.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">prior_hvg_test</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"CM"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"TTN"</span><span class="op">)</span>,</span>
 <span>                        <span class="st">"Fib"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"POSTN"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ct_list</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_gex_bybckgrnd.html">filt_gex_bybckgrnd</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">ct_list</span>,</span>
 <span>                                            prior_mrks <span class="op">=</span> <span class="va">prior_hvg_test</span><span class="op">)</span></span></code></pre></div>
+<p>Once final genes per view have been defined, we can filter again
+views with not enough genes</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ct_list</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_views_bygenes.html">filt_views_bygenes</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">ct_list</span>,</span>
+<span>                                            ngenes <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></code></pre></div>
 <p>To convert the cell-type list into a MOFA ready object we just run
 the following line</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">multiview_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pb_dat2MOFA.html">pb_dat2MOFA</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">ct_list</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">multiview_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pb_dat2MOFA.html">pb_dat2MOFA</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">ct_list</span>, </span>
+<span>                             sample_column <span class="op">=</span> <span class="st">"donor_id"</span><span class="op">)</span></span></code></pre></div>
 <p>All the previous steps can be concatenated using <code>%&gt;%</code>
 for your convenience</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">multiview_dat</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/create_init_exp.html">create_init_exp</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="va">testpbcounts</span>,  </span>
 <span>                                               coldata <span class="op">=</span> <span class="va">testcoldata</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
@@ -266,9 +282,13 @@ for your convenience</p>
 <span>                          ncells <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>                          counts_col <span class="op">=</span> <span class="st">"cell_counts"</span>, <span class="co"># This refers to the column name in testcoldata where the number of cells per profile was stored</span></span>
 <span>                          ct_col <span class="op">=</span> <span class="st">"cell_type"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_views_bysamples.html">filt_views_bysamples</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">.</span>,</span>
+<span>                                              nsamples <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_gex_byexpr.html">filt_gex_byexpr</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">.</span>,</span>
 <span>                                min.count <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>                                min.prop <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_views_bygenes.html">filt_views_bygenes</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">.</span>,</span>
+<span>                                   ngenes <span class="op">=</span> <span class="fl">15</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/tmm_trns.html">tmm_trns</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">.</span>,</span>
 <span>                         scale_factor <span class="op">=</span> <span class="fl">1000000</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_gex_byhvg.html">filt_gex_byhvg</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">.</span>,</span>
@@ -276,7 +296,10 @@ for your convenience</p>
 <span>                               var.threshold <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_gex_bybckgrnd.html">filt_gex_bybckgrnd</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">.</span>,</span>
 <span>                                            prior_mrks <span class="op">=</span> <span class="va">prior_hvg_test</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/pb_dat2MOFA.html">pb_dat2MOFA</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">.</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/filt_views_bygenes.html">filt_views_bygenes</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">.</span>,</span>
+<span>                                   ngenes <span class="op">=</span> <span class="fl">15</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/pb_dat2MOFA.html">pb_dat2MOFA</a></span><span class="op">(</span>pb_dat_list <span class="op">=</span> <span class="va">.</span>, </span>
+<span>                            sample_column <span class="op">=</span> <span class="st">"donor_id"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="fitting-a-mofa-model">2. Fitting a MOFA model<a class="anchor" aria-label="anchor" href="#fitting-a-mofa-model"></a>
@@ -300,7 +323,7 @@ across cell-types</li>
 response) across cell-types</li>
 </ol>
 <p>Fitting the model should take seconds.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">MOFAobject</span> <span class="op">&lt;-</span> <span class="fu">MOFA2</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MOFA2/man/create_mofa.html" class="external-link">create_mofa</a></span><span class="op">(</span><span class="va">multiview_dat</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">data_opts</span> <span class="op">&lt;-</span> <span class="fu">MOFA2</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MOFA2/man/get_default_data_options.html" class="external-link">get_default_data_options</a></span><span class="op">(</span><span class="va">MOFAobject</span><span class="op">)</span></span>
@@ -337,7 +360,7 @@ documentation.</p>
 <p>These functions are based on the idea that users will have extra
 information regarding the samples they analyzed. We provide supplemental
 annotations of the toy object.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">metadata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">inputs_dir</span>, <span class="st">"testmetadata.rds"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         sample patient_group batch</span></span>
@@ -349,12 +372,12 @@ annotations of the toy object.</p>
 <span><span class="co">#&gt; 151      RZ_P3      myogenic     A</span></span></code></pre></div>
 <p>Our sample meta data can also contain continous measurements if
 needed, for example a clinical variable <code>fake_var</code></p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">145</span><span class="op">)</span></span>
 <span><span class="va">metadata</span><span class="op">$</span><span class="va">fake_var</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>You can obtain the factor scores of each of your samples by calling
 the next function</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_factors</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/get_tidy_factors.html">get_tidy_factors</a></span><span class="op">(</span>model <span class="op">=</span> <span class="va">model</span>,</span>
 <span>                                 metadata <span class="op">=</span> <span class="va">metadata</span>,</span>
 <span>                                 factor <span class="op">=</span> <span class="st">"all"</span>,</span>
@@ -372,7 +395,7 @@ the next function</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> control_P17 myogenic      B       -<span style="color: #BB0000;">1.29</span>  Factor1 -<span style="color: #BB0000;">1.33</span></span></span></code></pre></div>
 <p>You can specify also which factor you are interested and perform any
 type of statistical analysis of interest</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Factor3</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/get_tidy_factors.html">get_tidy_factors</a></span><span class="op">(</span>model <span class="op">=</span> <span class="va">model</span>,</span>
 <span>                             metadata <span class="op">=</span> <span class="va">metadata</span>,</span>
 <span>                             factor <span class="op">=</span> <span class="st">"Factor3"</span>,</span>
@@ -391,7 +414,7 @@ type of statistical analysis of interest</p>
 <p>Each factor is composed by a linear combination of genes per
 cell-type, and it is possible to extract the weights for each factor
 with a practical function</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gene_weights</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/get_geneweights.html">get_geneweights</a></span><span class="op">(</span>model <span class="op">=</span> <span class="va">model</span>, factor <span class="op">=</span> <span class="st">"Factor1"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">gene_weights</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      feature       value ctype</span></span>
@@ -419,13 +442,13 @@ decoupleR’s documentation for this.</p>
 <p>As an initial exploratory analysis, one may want to visualize samples
 in a 2D space, here we provide a plotting function that allows to
 perform this using UMAPs or multidimensional-scaling plots.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">UMAP_embedding</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/plot_sample_2D.html">plot_sample_2D</a></span><span class="op">(</span>model <span class="op">=</span> <span class="va">model</span>,</span>
 <span>                                               method <span class="op">=</span> <span class="st">"UMAP"</span>,</span>
 <span>                                               metadata <span class="op">=</span> <span class="va">metadata</span>,</span>
 <span>                                               sample_id_column <span class="op">=</span> <span class="st">"sample"</span>,</span>
 <span>                                               color_by <span class="op">=</span> <span class="st">"patient_group"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="get-started_files/figure-html/unnamed-chunk-21-1.png" width="384"></p>
+<p><img src="get-started_files/figure-html/unnamed-chunk-24-1.png" width="384"></p>
 </div>
 <div class="section level3">
 <h3 id="performing-statistical-analyses">Performing statistical analyses<a class="anchor" aria-label="anchor" href="#performing-statistical-analyses"></a>
@@ -435,7 +458,7 @@ performs association tests between factor scores and covariates of the
 samples, the covariates can be continuous or categorical. In the case of
 continuous variables a linear model is fitted. For categorical
 variables, analysis of variance (ANOVA) is performed.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">categorical_assoc</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/get_associations.html">get_associations</a></span><span class="op">(</span>model <span class="op">=</span> <span class="va">model</span>,</span>
 <span>                                      metadata <span class="op">=</span> <span class="va">metadata</span>,</span>
 <span>                                       sample_id_column <span class="op">=</span> <span class="st">"sample"</span>,</span>
@@ -452,7 +475,7 @@ variables, analysis of variance (ANOVA) is performed.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Factor3 patient_group 0.315       0.547 </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> Factor4 patient_group 0.037<span style="text-decoration: underline;">9</span>      0.152 </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> Factor5 patient_group 0.274       0.547</span></span></code></pre></div>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">continuous_assoc</span> <span class="op">&lt;-</span> <span class="fu">MOFAcellulaR</span><span class="fu">::</span><span class="fu"><a href="../reference/get_associations.html">get_associations</a></span><span class="op">(</span>model <span class="op">=</span> <span class="va">model</span>,</span>
 <span>                                       metadata <span class="op">=</span> <span class="va">metadata</span>,</span>
 <span>                                       sample_id_column <span class="op">=</span> <span class="st">"sample"</span>,</span>
@@ -483,7 +506,7 @@ of the original data, in this case the variability of samples within a
 single cell-type. A full exploration of the model can be done
 using:</p></li>
 </ol>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model</span><span class="op">@</span><span class="va">cache</span><span class="op">$</span><span class="va">variance_explained</span><span class="op">$</span><span class="va">r2_total</span></span>
 <span><span class="co">#&gt; $single_group</span></span>
 <span><span class="co">#&gt;       CM     Endo      Fib </span></span>
@@ -492,7 +515,7 @@ using:</p></li>
 <li>Each latent variable contributes in explaining the variability of
 the original data and that can also be used to prioritize signals.</li>
 </ol>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model</span><span class="op">@</span><span class="va">cache</span><span class="op">$</span><span class="va">variance_explained</span><span class="op">$</span><span class="va">r2_per_factor</span><span class="op">$</span><span class="va">single_group</span><span class="op">[</span>,,drop <span class="op">=</span> <span class="cn">F</span><span class="op">]</span></span>
 <span><span class="co">#&gt;                CM       Endo       Fib</span></span>
 <span><span class="co">#&gt; Factor1 42.440678 36.1886863 27.636917</span></span>
@@ -513,7 +536,7 @@ explored in detail with <code><a href="../reference/get_geneweights.html">MOFAce
 <p>To visualize the distinct components of the model, we provide a
 heatmap plotting function that collects the distinct levels of results
 of the model</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">assoc_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"categorical"</span> <span class="op">=</span> <span class="va">categorical_assoc</span>, <span class="st">"continuous"</span> <span class="op">=</span> <span class="va">continuous_assoc</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/plot_MOFA_hmap.html">plot_MOFA_hmap</a></span><span class="op">(</span>model <span class="op">=</span> <span class="va">model</span>,</span>
@@ -522,8 +545,8 @@ of the model</p>
 <span>                sample_id_column <span class="op">=</span> <span class="st">"sample"</span>,</span>
 <span>                sample_anns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"patient_group"</span>, <span class="st">"batch"</span>, <span class="st">"fake_var"</span><span class="op">)</span>,</span>
 <span>                assoc_list <span class="op">=</span> <span class="va">assoc_list</span><span class="op">)</span></span></code></pre></div>
-<p><img src="get-started_files/figure-html/unnamed-chunk-26-1.png" width="432"></p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<p><img src="get-started_files/figure-html/unnamed-chunk-29-1.png" width="432"></p>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.3.1 (2023-06-16)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu (64-bit)</span></span>
@@ -548,7 +571,7 @@ of the model</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
 <span><span class="co">#&gt;  [1] dplyr_1.1.2                 MOFAcellulaR_0.0.0.9000    </span></span>
-<span><span class="co">#&gt;  [3] ggplot2_3.4.2               uwot_0.1.15                </span></span>
+<span><span class="co">#&gt;  [3] ggplot2_3.4.2               uwot_0.1.16                </span></span>
 <span><span class="co">#&gt;  [5] Matrix_1.5-4.1              circlize_0.4.15            </span></span>
 <span><span class="co">#&gt;  [7] ComplexHeatmap_2.16.0       MOFA2_1.10.0               </span></span>
 <span><span class="co">#&gt;  [9] SummarizedExperiment_1.30.2 Biobase_2.60.0             </span></span>
@@ -558,10 +581,10 @@ of the model</p>
 <span><span class="co">#&gt; [17] matrixStats_1.0.0          </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;   [1] RColorBrewer_1.1-3          jsonlite_1.8.5             </span></span>
+<span><span class="co">#&gt;   [1] RColorBrewer_1.1-3          jsonlite_1.8.7             </span></span>
 <span><span class="co">#&gt;   [3] shape_1.4.6                 magrittr_2.0.3             </span></span>
 <span><span class="co">#&gt;   [5] farver_2.1.1                corrplot_0.92              </span></span>
-<span><span class="co">#&gt;   [7] rmarkdown_2.22              GlobalOptions_0.1.2        </span></span>
+<span><span class="co">#&gt;   [7] rmarkdown_2.23              GlobalOptions_0.1.2        </span></span>
 <span><span class="co">#&gt;   [9] fs_1.6.2                    zlibbioc_1.46.0            </span></span>
 <span><span class="co">#&gt;  [11] ragg_1.2.5                  vctrs_0.6.3                </span></span>
 <span><span class="co">#&gt;  [13] memoise_2.0.1               DelayedMatrixStats_1.22.1  </span></span>
@@ -570,7 +593,7 @@ of the model</p>
 <span><span class="co">#&gt;  [19] BiocNeighbors_1.18.0        broom_1.0.5                </span></span>
 <span><span class="co">#&gt;  [21] Rhdf5lib_1.22.0             rhdf5_2.44.0               </span></span>
 <span><span class="co">#&gt;  [23] sass_0.4.6                  bslib_0.5.0                </span></span>
-<span><span class="co">#&gt;  [25] basilisk_1.12.0             desc_1.4.2                 </span></span>
+<span><span class="co">#&gt;  [25] basilisk_1.12.1             desc_1.4.2                 </span></span>
 <span><span class="co">#&gt;  [27] plyr_1.8.8                  cachem_1.0.8               </span></span>
 <span><span class="co">#&gt;  [29] igraph_1.5.0                lifecycle_1.0.3            </span></span>
 <span><span class="co">#&gt;  [31] iterators_1.0.14            pkgconfig_2.0.3            </span></span>
@@ -585,7 +608,7 @@ of the model</p>
 <span><span class="co">#&gt;  [49] withr_2.5.0                 doParallel_1.0.17          </span></span>
 <span><span class="co">#&gt;  [51] backports_1.4.1             BiocParallel_1.34.2        </span></span>
 <span><span class="co">#&gt;  [53] highr_0.10                  HDF5Array_1.28.1           </span></span>
-<span><span class="co">#&gt;  [55] MASS_7.3-60                 DelayedArray_0.26.3        </span></span>
+<span><span class="co">#&gt;  [55] MASS_7.3-60                 DelayedArray_0.26.6        </span></span>
 <span><span class="co">#&gt;  [57] rjson_0.2.21                bluster_1.10.0             </span></span>
 <span><span class="co">#&gt;  [59] tools_4.3.1                 glue_1.6.2                 </span></span>
 <span><span class="co">#&gt;  [61] rhdf5filters_1.12.1         Rtsne_0.16                 </span></span>
@@ -610,7 +633,7 @@ of the model</p>
 <span><span class="co">#&gt;  [99] Rcpp_1.0.10                 dir.expiry_1.8.0           </span></span>
 <span><span class="co">#&gt; [101] png_0.1-8                   parallel_4.3.1             </span></span>
 <span><span class="co">#&gt; [103] pkgdown_2.0.7               basilisk.utils_1.12.1      </span></span>
-<span><span class="co">#&gt; [105] scran_1.28.1                sparseMatrixStats_1.12.1   </span></span>
+<span><span class="co">#&gt; [105] scran_1.28.1                sparseMatrixStats_1.12.2   </span></span>
 <span><span class="co">#&gt; [107] bitops_1.0-7                scales_1.2.1               </span></span>
 <span><span class="co">#&gt; [109] purrr_1.0.1                 crayon_1.5.2               </span></span>
 <span><span class="co">#&gt; [111] GetoptLong_1.0.5            rlang_1.1.1                </span></span>
