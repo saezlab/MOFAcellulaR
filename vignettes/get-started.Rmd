@@ -117,6 +117,14 @@ ct_list <- filt_views_bygenes(pb_dat_list = ct_list,
                               ngenes = 15)
 ```
 
+Additionaly, you would like to filter samples within a view that have a large number of 0 values across features, here refer as samples with low feature coverage (we have observed that these affect the MOFA model by fitting factors associated exclusively with outlier samples). Here we expect that each sample within a view has a 90% coverage of features.
+
+```{r}
+ct_list <- filt_samples_bycov(pb_dat_list = ct_list,
+                               prop_coverage = 0.9)
+```
+
+
 Normalization of pseudobulk expression profiles using Trimmed Mean of the M-values (TMM) from `edgeR::calcNormFactors` is then performed
 
 ```{r}
@@ -124,7 +132,7 @@ ct_list <- MOFAcellulaR::tmm_trns(pb_dat_list = ct_list,
                                   scale_factor = 1000000)
 ```
 
-Identification of highly variable genes per cell type is performed with `scran::getTopHVGs()`, however you can also provide your own list of highly variable genes if preferred
+Identification of highly variable genes per cell type is performed with `scran::getTopHVGs()`, however you can also provide your own list of highly variable genes if preferred. As a suggestion, we consider this step optional if the number of features is relatively low. 
 
 ```{r}
 ct_list <- MOFAcellulaR::filt_gex_byhvg(pb_dat_list = ct_list,
@@ -176,6 +184,8 @@ multiview_dat <- MOFAcellulaR::create_init_exp(counts = testpbcounts,
                                 min.prop = 0.25) %>%
   MOFAcellulaR::filt_views_bygenes(pb_dat_list = .,
                                    ngenes = 15) %>%
+  MOFAcellulaR::filt_samples_bycov(pb_dat_list = .,
+                               prop_coverage = 0.9) %>%
   MOFAcellulaR::tmm_trns(pb_dat_list = .,
                          scale_factor = 1000000) %>%
   MOFAcellulaR::filt_gex_byhvg(pb_dat_list = .,
@@ -185,6 +195,8 @@ multiview_dat <- MOFAcellulaR::create_init_exp(counts = testpbcounts,
                                             prior_mrks = prior_hvg_test) %>%
   MOFAcellulaR::filt_views_bygenes(pb_dat_list = .,
                                    ngenes = 15) %>%
+  MOFAcellulaR::filt_samples_bycov(pb_dat_list = .,
+                               prop_coverage = 0.9) %>%
   MOFAcellulaR::pb_dat2MOFA(pb_dat_list = ., 
                             sample_column = "donor_id")
 ```
