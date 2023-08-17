@@ -147,7 +147,7 @@ plot_MOFA_hmap <- function(model,
   # Gradient colors --------------------------------------------------------------
   # For R2
   max_r2 <- r2_per_factor %>%
-    max()
+    max(na.rm = TRUE)
 
   if(max_r2 < 90) { # Add tolerance buffer
     col_fun_r2 <- circlize::colorRamp2(seq(0, max_r2 + 5, length = 50),
